@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Selector App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #d67a7a;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            text-align: center;
+            color: #553841;
+        }
+
+        button {
+            margin: 5px;
+            padding: 10px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        input {
+            margin: 5px;
+            padding: 8px;
+        }
+
+        select {
+            margin: 5px;
+            padding: 8px;
+        }
+
+        #result {
+            margin-top: 20px;
+            text-align: center;
+            color: #333;
+        }
+
+        .unit-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .unit-button {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .unit-button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Cat Selector App</h1>
+
+<button onclick="showAllNames()">All Names</button>
+
+<label for="healthInput">Health Issues:</label>
+<input type="number" id="healthInput">
+
+<button onclick="showWeights()">Weight</button>
+<div class="unit-buttons">
+    <button class="unit-button" onclick="setWeightUnit('imperial')">Imperial</button>
+    <button class="unit-button" onclick="setWeightUnit('metric')">Metric</button>
+</div>
+
+<button onclick="showAverageIntelligence()">Average Intelligence</button>
+<button onclick="showIntelligenceFriendly()">Intelligence - Friendly</button>
+<button onclick="showAverageIntelligenceChildFriendly()">Avg Intelligence - Child Friendly</button>
+
+<div id="result"></div>
+
+<script>
+    const breedsUrl = 'https://api.thecatapi.com/v1/breeds';
+    let weightUnit = 'imperial';
+
+    const fetchData = async (url) => {
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    };
+
+    const showAllNames = async () => {
+        try {
+            const data = await fetchData(breedsUrl);
+            const names = data.map(cat => cat.name).join(', ');
+            displayResult(names);
+        } catch (error) {
+            console.error('Error in showAllNames:', error);
+        }
+    };
+
+    
+
+
+    const showWeights = async () => {
+        try {
+            const data = await fetchData(breedsUrl);
+            const weights = data.map(cat => `${cat.name}: ${cat.weight[weightUnit]} ${weightUnit.toUpperCase()}`).join('<br>');
+            displayResult(weights);
+        } catch (error) {
+            console.error('Error in showWeights:', error);
+        }
+    };
+
+    const showIntelligenceFriendly = async () => {
+        try {
+            const data = await fetchData(breedsUrl);
+            const intelligenceFriendly = data.map(cat => `${cat.name}: I - ${cat.intelligence}, F - ${cat.child_friendly}`).join('<br>');
+            displayResult(intelligenceFriendly);
+        } catch (error) {
+            console.error('Error in showIntelligenceFriendly:', error);
+        }
+    };
+
+    const calculateAverageIntelligence = (cats) => {
+        const totalIntelligence = cats.reduce((sum, cat) => sum + cat.intelligence, 0);
+        return totalIntelligence / cats.length;
+    };
+
+    const showAverageIntelligence = async () => {
+        try {
+            const data = await fetchData(breedsUrl);
+            const averageIntelligence = calculateAverageIntelligence(data);
+            displayResult(`Average Intelligence: ${averageIntelligence.toFixed(2)}`);
+        } catch (error) {
+            console.error('Error in showAverageIntelligence:', error);
+        }
+    };
+
+    const showAverageIntelligenceChildFriendly = async () => {
+        try {
+            const data = await fetchData(breedsUrl);
+            const childFriendlyCats = data.filter(cat => cat.child_friendly > 3);
+            const averageIntelligence = calculateAverageIntelligence(childFriendlyCats);
+            displayResult(`Average Intelligence for Child Friendly: ${averageIntelligence.toFixed(2)}`);
+        } catch (error) {
+            console.error('Error in showAverageIntelligenceChildFriendly:', error);
+        }
+    };
+
+    const displayResult = (result) => document.getElementById('result').innerHTML = result;
+
+    const setWeightUnit = (unit) => {
+        weightUnit = unit;
+        showWeights();
+    };
+</script>
+
+</body>
+</html>
